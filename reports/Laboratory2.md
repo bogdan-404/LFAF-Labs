@@ -155,6 +155,7 @@ q2 -> aq2 | epsilon
 
 I did not specify the epsilon in the implementation, because we have the final automaton with F - set of final states, and we will check strings using the automaton.
 Here is an example of checking 5 strings, and also the output shows the regular grammar representation for the given NFA:
+
 ![Image](img/lab2_4.png)
 
 ### Function to identify if it is deterministic or non-deterministic automaton:
@@ -176,6 +177,7 @@ def is_dfa(self):
 Basically, all we do is to check for multiple transition from a state on a distinct input. If a distinct input symbol is used for more than one transition from a state, we return False.
 
 Because, for my variant it is given an NFA, I have the following output:
+
 ![Image](img/lab2_3.png)
 
 ### Convertion of given NFA to a DFA:
