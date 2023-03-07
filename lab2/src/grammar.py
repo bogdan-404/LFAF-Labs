@@ -35,35 +35,29 @@ class Grammar:
         for q in Q:
             delta[q] = {}
             for a in Sigma:
-                rhs_list = [rhs for rhs in self.P.get(q, {}) if rhs.startswith(a)]
+                rhs_list = [rhs for rhs in self.P.get(
+                    q, {}) if rhs.startswith(a)]
                 if len(rhs_list) > 0:
                     delta[q][a] = rhs_list[0][1:]
         return FiniteAutomaton(Q, Sigma, delta, {}, q0, F)
 
     def grammar_type(self):
         if all(
-            len(rhs) <= 1 and (rhs[0] in self.Vt or rhs[0] == "epsilon")
+            len(rhs) == 1 and rhs[0] in self.Vt
+            or len(rhs) == 2 and rhs[0] in self.Vt and rhs[1] in self.Vn
             for prod in self.P.values()
             for rhs in prod
         ):
             return "Type 3 - Regular Grammar"
         elif all(
-            len(rhs) >= 1 and (rhs[0] in self.Vt) and all(c in self.Vn for c in rhs[1:])
-            for prod in self.P.values()
-            for rhs in prod
+            len(lhs) == 1 and lhs[0] in self.Vn
+            for lhs, prod in self.P.items()
         ):
             return "Type 2 - Context-Free Grammar"
         elif all(
-            len(prod) > 0
-            and all(rhs in self.Vn for rhs in prod[1:])
-            and (
-                (len(prod) == 1 and prod[0] == "epsilon")
-                or (
-                    prod[0] in self.Vn
-                    and all(len(rhs) > 0 and rhs[0] in self.Vt for rhs in prod[1:])
-                )
-            )
+            len(prod) > 0 and len(rhs) > 0 
             for prod in self.P.values()
+            for rhs in prod
         ):
             return "Type 1 - Context-Sensitive Grammar"
         else:

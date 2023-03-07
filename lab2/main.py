@@ -35,3 +35,13 @@ if __name__ == "__main__":
     print("\nTest 5 strings from manual input:")
     for s in strings:
         print(s, "belongs to the language:", fa.string_belongs_to_language(s))
+
+    print("\nFinite Automata is DFA: ", fa.is_dfa())
+
+    fa.to_dfa()
+    print("\nFinite Automata is DFA: ", fa.is_dfa())
+    print("\nq0: ", fa.q0)
+    print("Q: ", fa.Q)
+    print("Sigma: ", fa.Sigma)
+    print("F: ", fa.F)
+    print("Delta: ", fa.delta)
