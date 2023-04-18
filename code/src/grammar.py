@@ -8,6 +8,119 @@ class Grammar:
         self.Vt = Vt
         self.P = P
         self.S = S
+        self.counter = 0
+        self.alphabet = ['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                         'N', 'O', 'P', 'Q', 'R', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+
+    def cfg_to_cnf(self):
+        new_start = "S0"
+        self.Vn.add(new_start)
+        self.P[new_start] = {self.S}
+        self.S = new_start
+
+        self.eliminate_null_productions()
+        self.eliminate_unit_productions()
+        self.eliminate_unproductive_rules()
+        self.eliminate_inaccessible_symbols()
+        self.obtain_cnf()
+
+    def eliminate_null_productions(self):
+        null_productions = {
+            A for A, prods in self.P.items() if "epsilon" in prods}
+        for A in null_productions:
+            self.P[A].remove("epsilon")
+        for A, prods in self.P.items():
+            new_prods = set()
+            for prod in prods:
+                for B in null_productions:
+                    new_prod = prod.replace(B, "")
+                    if new_prod:
+                        new_prods.add(new_prod)
+            self.P[A].update(new_prods)
+
+    def eliminate_unit_productions(self):
+        unit_productions_removed = True
+        while unit_productions_removed:
+            unit_productions_removed = False
+            new_productions = {A: set(prods) for A, prods in self.P.items()}
+            for A in self.Vn:
+                to_replace = set()
+                for prod in self.P[A]:
+                    if len(prod) == 1 and prod in self.Vn:
+                        to_replace.add(prod)
+                new_productions[A].difference_update(to_replace)
+                for unit_prod in to_replace:
+                    new_productions[A].update(self.P[unit_prod])
+                if to_replace:
+                    unit_productions_removed = True
+            self.P = new_productions
+
+    def eliminate_unproductive_rules(self):
+        productive = set()
+        while True:
+            new_productive = productive.copy()
+            for A, prods in self.P.items():
+                for prod in prods:
+                    if all(symbol in self.Vt or symbol in new_productive for symbol in prod):
+                        new_productive.add(A)
+            if new_productive == productive:
+                break
+            else:
+                productive = new_productive
+        for A in self.Vn - productive:
+            del self.P[A]
+        self.Vn.intersection_update(productive)
+
+    def eliminate_inaccessible_symbols(self):
+        accessible = {self.S}
+        while True:
+            new_accessible = accessible.copy()
+            for A in accessible:
+                for prod in self.P[A]:
+                    new_accessible.update(
+                        {symbol for symbol in prod if symbol in self.Vn})
+            if new_accessible == accessible:
+                break
+            else:
+                accessible = new_accessible
+        for A in self.Vn - accessible:
+            del self.P[A]
+        self.Vn.intersection_update(accessible)
+
+    def obtain_cnf(self):
+        for terminal in list(self.Vt.copy()):
+            new_prod = self.alphabet[self.counter]
+            self.Vn.add(new_prod)
+            self.P[new_prod] = {terminal}
+            self.counter += 1
+        for A, prods in self.P.items():
+            new_prods = set()
+            for prod in prods:
+                if len(prod) > 1:
+                    for terminal in self.Vt:
+                        prod = prod.replace(
+                            terminal, self.alphabet[list(self.Vt).index(terminal)])
+                new_prods.add(prod)
+            self.P[A] = new_prods
+        flag = True
+        while flag:
+            flag = False
+            for A, prods in list(self.P.items()):
+                new_prods = set()
+                for prod in prods:
+                    if len(prod) > 2:
+                        if len(prod) > 3:
+                            flag = True
+                        if self.counter > 15:
+                            self.counter = 0
+                        new_prod = self.alphabet[self.counter]
+                        self.Vn.add(new_prod)
+                        self.P[new_prod] = {prod[0:2]}
+                        self.counter += 1
+                        new_prods.add(new_prod + prod[2:])
+                    else:
+                        new_prods.add(prod)
+                self.P[A] = new_prods
 
     def generate_string(self):
         def random_generate(s):
@@ -55,7 +168,7 @@ class Grammar:
         ):
             return "Type 2 - Context-Free Grammar"
         elif all(
-            len(prod) > 0 and len(rhs) > 0 
+            len(prod) > 0 and len(rhs) > 0
             for prod in self.P.values()
             for rhs in prod
         ):
