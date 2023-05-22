@@ -15,7 +15,7 @@ No production rules in CNF are in the form A -> epsilon, except for the case whe
 
 To acheive the CNF, we need the following steps:
 
-1. Add a new start symbol S0 in case S appers in right hand side of at least one production rule
+1. Add a new start symbol S0 in case S appears in right hand side of at least one production rule
 2. Eliminate null productions
 3. Eliminate unit productions
 4. Eliminate unproductive rules
